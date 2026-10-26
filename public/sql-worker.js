@@ -1,0 +1,3 @@
+importScripts('/assets/sql-wasm.js');
+let engine;
+onmessage=async({data})=>{try{engine ||= await initSqlJs({locateFile:f=>'/assets/'+f});const db=new engine.Database();try{db.run(data.setup);db.run('PRAGMA query_only=ON;');if(!/^\s*(SELECT|WITH)\b/i.test(data.query)||/\b(attach|detach|pragma|load_extension)\b/i.test(data.query))throw Error('Use a SELECT query or a WITH expression that returns rows.');const out=db.exec(data.query);if(out.length!==1)throw Error('Run one query that returns one result table.');postMessage({result:out[0]});}finally{db.close()}}catch(e){postMessage({error:e.message})}};
